@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<project name="NER" default="compile" basedir=".">
+	<property environment="env" />
+	<property name="src" value="./src" />
+	<property name="build" value="./bin" />
+	<property name="lib" value="./lib" />
+	<presetdef name="javac">
+	    <javac includeantruntime="false" />
+	</presetdef>
+	<path id="compile.all.classpath">
+		<fileset dir="${lib}">
+			<include name="CommonUtil.jar"/>
+			<include name="icu4j_3_6_1.jar"/>
+			<include name="junit-4.11.jar"/>
+			<include name="log4j-1.2.9.jar"/>
+			<include name="magyarlanc-3.0.jar"/>
+			<include name="magyarlanc-resource-3.0.jar"/>
+			<include name="mallet.jar"/>
+			<include name="mallet-deps.jar"/>
+		</fileset>
+	</path>
+
+	<!-- init -->		
+	<target name="init">
+		<tstamp/>
+		<mkdir dir="${build}"/>
+		<mkdir dir="${lib}"/>
+	</target>
+
+	<!-- compile -->
+	<target name="compile" depends="init">
+		<javac srcdir="${src}" destdir="${build}" 
+			classpathref="compile.all.classpath" debug="on" encoding="UTF-8"
+			sourcepath="">
+			<include name="**/*.java"/>
+		</javac>
+	</target>
+
+	<target name="jar-box" depends="compile">
+		<jar destfile="ner.jar">
+			<fileset dir="${build}">
+				<include name="**/*.class"/>
+			</fileset>
+			<fileset dir="${src}">
+				<include name="**/*.java"/>
+			</fileset>
+	        <zipgroupfileset dir="${lib}" includes="**/*.jar" />
+			<manifest>
+			  <attribute name="Built-By" value="${user.name}"/>
+			  <attribute name="Main-Class" value="main.Main"/>
+			  <attribute name="Implementation-Version" value="${DSTAMP}-${TSTAMP}"/>   
+			  <attribute name="Built-Date" value="${TODAY}"/>
+			  <attribute name="Class-Path" value="	lib/CommonUtil.jar
+													lib/icu4j_3_6_1.jar
+													lib/junit-4.11.jar
+													lib/log4j-1.2.9.jar
+													lib/magyarlanc-3.0.jar
+													lib/magyarlanc-resource-3.0.jar
+													lib/mallet.jar
+													lib/mallet-deps.jar" />
+			</manifest>
+			</jar>
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar destfile="ner.jar">
+			<fileset dir="${build}">
+				<include name="**/*.class"/>
+			</fileset>
+			<manifest>
+			  <attribute name="Built-By" value="${user.name}"/>
+			  <attribute name="Main-Class" value="main.Main"/>
+			  <attribute name="Implementation-Version" value="${DSTAMP}-${TSTAMP}"/>   
+			  <attribute name="Built-Date" value="${TODAY}"/>
+			  <attribute name="Class-Path" value="	lib/CommonUtil.jar
+													lib/icu4j_3_6_1.jar
+													lib/junit-4.11.jar
+													lib/log4j-1.2.9.jar
+													lib/magyarlanc-3.0.jar
+													lib/magyarlanc-resource-3.0.jar
+													lib/mallet.jar
+													lib/mallet-deps.jar" />
+			</manifest>
+			</jar>
+	</target>
+
+	<target name="jar-src">
+		<jar destfile="ner-src.jar">
+			<fileset dir="${src}">
+				<include name="**/*.java"/>
+			</fileset>
+		</jar>
+	</target>
+	
+	<target name="clean">
+		<delete verbose="true" quiet="true">
+			<fileset dir="${build}">
+				<include name="**/*.class"/>
+			</fileset>
+		</delete>
+	</target>
+
+</project>
