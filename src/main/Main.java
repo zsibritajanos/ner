@@ -1,16 +1,17 @@
 package main;
 
+/*
 import cc.mallet.fst.CRF;
 import crf.CRFTools;
 import crf.CRFTrainer;
 import crf.Model;
+*/
+
 import environmnet.Settings;
-import extractor.FeatureDescriptor;
-import extractor.FeatureExtractor;
 import fmeasure.FMeasure;
+import memm.MEMMMultiTrain;
 import ner.NamedEntityRecognizer;
 import splitter.MySplitter;
-import util.InstanceListUtil;
 import util.io.IOBReader;
 
 import java.io.*;
@@ -196,44 +197,14 @@ public class Main {
   public static void train(String trainFile, String trainFileEncoding, String trainFileColumnSeparator, int trainTokenColumnIndex, int trainLabelColumnIndex, String paramFile, String instanceListFile, String modelFile) {
 
     // reads the train sentences
-    List<List<String[]>> trainSentences = IOBReader.readIOB(trainFile, trainFileEncoding, trainFileColumnSeparator);
 
-    System.out.println("loading featureDescriptor");
-    FeatureDescriptor featureDescriptor = new FeatureDescriptor(paramFile);
-    System.out.println("featureDescriptor loaded");
-
-    FeatureExtractor featureExtractor = new FeatureExtractor(featureDescriptor.getFeatures());
-
-    CRFTrainer crfTrainer = new CRFTrainer(featureExtractor);
+//    CRFTrainer crfTrainer = new CRFTrainer(featureExtractor);
+    MEMMMultiTrain memmTrainer = new MEMMMultiTrain();
 
     long start = System.currentTimeMillis();
-    System.out.println("feature extractor started");
-    int c = 0;
-    String[] tokens;
-    String[] labels;
-    for (List<String[]> sentence : trainSentences) {
-      tokens = new String[sentence.size()];
-      labels = new String[sentence.size()];
-
-      for (int i = 0; i < sentence.size(); ++i) {
-        tokens[i] = sentence.get(i)[trainTokenColumnIndex];
-        labels[i] = sentence.get(i)[trainLabelColumnIndex];
-      }
-      crfTrainer.addSentence(tokens, labels);
-
-      if (++c % 1000 == 0) {
-        System.out.println(c + "/" + trainSentences.size() + " in " + ((System.currentTimeMillis() - start) / (long) 60000) + " min");
-      }
-    }
-
-    if (instanceListFile != null) {
-      InstanceListUtil.writeInstanceList(crfTrainer.getInstanceList(), instanceListFile);
-    }
-
-    start = System.currentTimeMillis();
-    System.out.println("train started");
-    CRF crf = CRFTools.train(crfTrainer.getInstanceList());
-    new Model(crf, featureDescriptor).serialize(modelFile);
+    
+    memmTrainer.run(trainFile, modelFile, trainLabelColumnIndex, trainFileEncoding, trainFileColumnSeparator);
+    
     System.out.println(("\ntrained in " + (System.currentTimeMillis() - start) / (long) 60000) + " min");
     System.out.println("model saved: " + modelFile);
   }

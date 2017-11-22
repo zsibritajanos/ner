@@ -3,59 +3,102 @@ package memm;
 import cc.mallet.types.Alphabet;
 import extractor.FeatureExtractor;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 //import relatedworks.LineFeatureExtractor;
 
 public class MEMMModel implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    // trained MEMM
-    private MEMM memm = null;
-    // possible labels
-    private Alphabet labelAlphabet = null;
-    // possible features
-    private Alphabet featureAlphabet = null;
-    // feature extractor
-    private FeatureExtractor featureExtractor = null;
+  private static final long serialVersionUID = 1L;
+  // trained MEMM
+  private MEMM memm = null;
+  // possible labels
+  private Alphabet labelAlphabet = null;
+  // possible features
+  private Alphabet featureAlphabet = null;
+  // feature extractor
+  private FeatureExtractor featureExtractor = null;
 
-    public MEMMModel(MEMM memm, Alphabet featureAlphabet, Alphabet labelAlphabet,
-                     FeatureExtractor featureExtractor) {
-        this.setMemm(memm);
-        this.setFeatureAlphabet(featureAlphabet);
-        this.setLabelAlphabet(labelAlphabet);
-        this.setFeatureExtractor(featureExtractor);
+  public MEMMModel(MEMM memm, FeatureExtractor featureExtractor) {
+    if(memm != null) {
+    	this.setMemm(memm);
+        this.setFeatureAlphabet(memm.getAlphabet());
+        this.setLabelAlphabet(memm.getLabelAlphabet());
     }
+	this.setFeatureExtractor(featureExtractor);    	    	    
+  }
 
-    public MEMM getMemm() {
-        return memm;
-    }
+  public void serialize(String file) {
 
-    public void setMemm(MEMM memm) {
-        this.memm = memm;
-    }
+	    try {
+	      ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(
+	              new FileOutputStream(file)));
+	      oos.writeObject(this);
+	      oos.close();
+	    } catch (IOException e) {
+	      e.printStackTrace();
+	    }
+	  }
 
-    public FeatureExtractor getFeatureExtractor() {
-        return featureExtractor;
-    }
+	  /**
+	   * Restore model from an input file.
+	   */
+	  public static MEMMModel restore(String file) {
+	    ObjectInputStream objectInputStream = null;
+	    MEMMModel model = null;
 
-    public void setFeatureExtractor(FeatureExtractor featureExtractor) {
-        this.featureExtractor = featureExtractor;
-    }
+	    try {
+	      objectInputStream = new ObjectInputStream(new GZIPInputStream(new FileInputStream(file)));
+	      model = (MEMMModel) objectInputStream.readObject();
+	    } catch (IOException | ClassNotFoundException e) {
+	      e.printStackTrace();
+	    } finally {
+	      try {
+	        objectInputStream.close();
+	      } catch (IOException e) {
+	        e.printStackTrace();
+	      }
+	    }
 
-    public Alphabet getLabelAlphabet() {
-        return labelAlphabet;
-    }
+	    return model;
+	  }
+  
+  public MEMM getMemm() {
+    return memm;
+  }
 
-    public void setLabelAlphabet(Alphabet labelAlphabet) {
-        this.labelAlphabet = labelAlphabet;
-    }
+  public void setMemm(MEMM memm) {
+    this.memm = memm;
+  }
 
-    public Alphabet getFeatureAlphabet() {
-        return featureAlphabet;
-    }
+  public FeatureExtractor getFeatureExtractor() {
+    return featureExtractor;
+  }
 
-    public void setFeatureAlphabet(Alphabet featureAlphabet) {
-        this.featureAlphabet = featureAlphabet;
-    }
+  public void setFeatureExtractor(FeatureExtractor featureExtractor) {
+    this.featureExtractor = featureExtractor;
+  }
+
+  public Alphabet getLabelAlphabet() {
+    return labelAlphabet;
+  }
+
+  public void setLabelAlphabet(Alphabet labelAlphabet) {
+    this.labelAlphabet = labelAlphabet;
+  }
+
+  public Alphabet getFeatureAlphabet() {
+    return featureAlphabet;
+  }
+
+  public void setFeatureAlphabet(Alphabet featureAlphabet) {
+    this.featureAlphabet = featureAlphabet;
+  }
 }

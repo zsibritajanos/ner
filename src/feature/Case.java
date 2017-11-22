@@ -75,7 +75,9 @@ public class Case extends Feature {
      */
     public static boolean isCamelCase(String token) {
         char[] chars = token.toCharArray();
-
+        if(chars.length == 0) {
+        	return false;
+        }
         // first letter is upcase
         if (!Character.isUpperCase(chars[0])) {
             return false;
@@ -131,8 +133,10 @@ public class Case extends Feature {
         }
 
         for (String part : parts) {
-            if (!isCapizalized(part)) {
-                return false;
+            if(!part.equals("")) {
+            	if (!isCapizalized(part)) {
+                    return false;
+                }            	
             }
         }
 
@@ -182,6 +186,9 @@ public class Case extends Feature {
      */
     public static boolean isCapizalized(String token) {
         // first char is capitalized
+    	if(token.trim().length() == 0) {
+    		return false;
+    	}
         if (!Character.isUpperCase(token.charAt(0))) {
             return false;
         }

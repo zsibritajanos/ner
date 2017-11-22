@@ -1,6 +1,5 @@
 package util;
 
-import cc.mallet.fst.CRF;
 import cc.mallet.types.*;
 import environmnet.Settings;
 
@@ -49,7 +48,7 @@ public class InstanceListUtil {
     }
   }
 
-  /**
+/*  *//**
    * Writes the given (test) instace to the given file.
    *
    * @param goldLabels
@@ -57,9 +56,10 @@ public class InstanceListUtil {
    * @param instance
    * @param crf
    * @param file
-   */
+   *//*
+  
   public static void writeInstanceList(String[] goldLabels, String[] predicatedLabels, Instance instance,
-                                       CRF crf, String file) {
+                                       MEMM memm, String file, Alphabet labelAlphabet) {
     try {
       if (out == null) {
         out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(
@@ -77,20 +77,20 @@ public class InstanceListUtil {
         if (i == 0) {
           sourceStateIndex = 0;
         } else {
-          sourceStateIndex = crf.getState(predicatedLabels[i - 1]).getIndex();
+          sourceStateIndex = memm.getState(predicatedLabels[i - 1]).getIndex();
         }
 
-        int destStateIndex = crf.getState(predicatedLabels[i]).getIndex();
+        int destStateIndex = memm.getState(predicatedLabels[i]).getIndex();
 
         // iterates over the features
         SparseVector features = ((FeatureVectorSequence) instance.getData())
                 .get(i);
         for (int j = 0; j < features.numLocations(); ++j) {
           int index = features.indexAtLocation(j);
-          String field = (String) crf.getInputAlphabet().lookupObject(index);
-          int fieldIndex = crf.getInputAlphabet().lookupIndex(field);
+          String field = (String) labelAlphabet.lookupObject(index);
+          int fieldIndex = labelAlphabet.lookupIndex(field);
 
-          double value = crf.getParameter(sourceStateIndex, destStateIndex,
+          double value = memm.getParameter(sourceStateIndex, destStateIndex,
                   fieldIndex);
 
           if (Math.abs(value) > 0.1) {
@@ -114,4 +114,5 @@ public class InstanceListUtil {
       e.printStackTrace();
     }
   }
+*/
 }

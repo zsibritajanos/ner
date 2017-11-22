@@ -1,63 +1,50 @@
 package ner;
 
-import cc.mallet.fst.CRF;
+import java.util.Arrays;
+import java.util.List;
+
+//import cc.mallet.fst.CRF;
 import cc.mallet.types.*;
-import crf.CRFTools;
-import crf.Model;
+//import crf.CRFTools;
+//import crf.Model;
 import extractor.FeatureDescriptor;
 import extractor.FeatureExtractor;
-import feature.Feature;
+import memm.MEMM;
+import memm.MEMMModel;
+import memm.MaxEntTools;
+import memm.InstanceListTools;
 import util.InstanceListUtil;
-
-import java.util.List;
 
 public class NamedEntityRecognizer {
 
   private FeatureDescriptor featureDescriptor = null;
-  private CRF crf = null;
+//  private CRF crf = null;
+  private MEMM memm;
   private FeatureExtractor featureExtractor = null;
   private Alphabet labelAlphabet = null;
   private Alphabet featureAlphabet = null;
 
-  public NamedEntityRecognizer(List<Feature> features, CRF crf) {
-    this.setCrf(crf);
+  /**
+   * @param model
+   */
+  public NamedEntityRecognizer(MEMMModel memm) {
 
-    this.setFeatureAlphabet(this.getCrf().getInputAlphabet());
+	this.setMemm(memm.getMemm());
+    this.setFeatureAlphabet(memm.getFeatureAlphabet());
     this.getFeatureAlphabet().stopGrowth();
 
-    this.setLabelAlphabet(this.getCrf().getOutputAlphabet());
+    this.setLabelAlphabet(memm.getLabelAlphabet());
     this.getLabelAlphabet().stopGrowth();
 
-    this.setFeatureExtractor(new FeatureExtractor(features));
-  }
-
-  public NamedEntityRecognizer(FeatureDescriptor featureDescriptor, CRF crf) {
-    this.setFeatureDescriptor(featureDescriptor);
-    this.setCrf(crf);
-
-    this.setFeatureAlphabet(this.getCrf().getInputAlphabet());
-    this.getFeatureAlphabet().stopGrowth();
-
-    this.setLabelAlphabet(this.getCrf().getOutputAlphabet());
-    this.getLabelAlphabet().stopGrowth();
-
-    this.setFeatureExtractor(new FeatureExtractor(this.getFeatureDescriptor()
-            .getFeatures()));
+    this.setFeatureExtractor(memm.getFeatureExtractor());
   }
 
   /**
    * @param file
    */
   public NamedEntityRecognizer(String file) {
-    this(Model.restore(file));
+    this(MEMMModel.restore(file));
     System.err.println("model loaded " + file);
-  }
-
-  /**
-   * @param model
-   */
-  public NamedEntityRecognizer(Model model) {
-    this(model.getFeatureDescriptor(), model.getCrf());
   }
 
   /**
@@ -75,14 +62,23 @@ public class NamedEntityRecognizer {
    */
   public String[] predicateSentence(String[] sentence, String[] goldLabels, String instanceLogFile) {
 
-    FeatureVectorSequence featureVectorSequence = new FeatureVectorSequence(
+/*    FeatureVectorSequence featureVectorSequence = new FeatureVectorSequence(
             CRFTools.featuresToAugmentableFeatureVectorArray(this
                     .getFeatureExtractor().extractFeatures(sentence), this
                     .getFeatureAlphabet(), false));
-
-    Instance instance = new Instance(featureVectorSequence, null, null, sentence);
-
-    Sequence<String> output = crf.transduce((Sequence<String>) instance.getData());
+*/
+	  
+	FeatureVectorSequence featureVectorSequence = 
+			InstanceListTools.featuresToFeatureVectorSequence(
+					this.getFeatureExtractor().extractFeatures(sentence),
+					this.getFeatureAlphabet(), false);
+			
+	  
+//    Instance instance = new Instance(featureVectorSequence, null, null, sentence);
+	InstanceList instanceList = InstanceListTools.doInstanceList(this.memm, featureVectorSequence, Arrays.asList(sentence));
+	
+	List<String> output = MaxEntTools.predict(instanceList, this.memm);
+    // Sequence<String> output = memm.transduce((Sequence<String>) instance.getData());
 
     String[] predicatedLabels = new String[output.size()];
     for (int i = 0; i < output.size(); i++) {
@@ -90,7 +86,7 @@ public class NamedEntityRecognizer {
     }
 
     if (instanceLogFile != null && goldLabels != null) {
-      InstanceListUtil.writeInstanceList(goldLabels, predicatedLabels, instance, crf, instanceLogFile);
+      InstanceListUtil.writeInstanceList(instanceList, instanceLogFile);
     }
 
     return predicatedLabels;
@@ -104,14 +100,14 @@ public class NamedEntityRecognizer {
     this.featureDescriptor = featureDescriptor;
   }
 
-  public CRF getCrf() {
+/*  public CRF getCrf() {
     return crf;
   }
 
   public void setCrf(CRF crf) {
     this.crf = crf;
   }
-
+*/
   public Alphabet getLabelAlphabet() {
     return labelAlphabet;
   }
@@ -134,5 +130,13 @@ public class NamedEntityRecognizer {
 
   public void setFeatureExtractor(FeatureExtractor featureExtractor) {
     this.featureExtractor = featureExtractor;
+  }
+
+  public MEMM getMemm() {
+	return memm;
+  }
+
+  public void setMemm(MEMM memm) {
+	this.memm = memm;
   }
 }

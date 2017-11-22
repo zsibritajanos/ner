@@ -1,12 +1,12 @@
 package memm;
 
+import cc.mallet.classify.MaxEnt;
 import cc.mallet.classify.MaxEntL1Trainer;
 import cc.mallet.types.*;
+//import crf.NamedEntity;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.Vector;
 
 public class MaxEntTools {
 
@@ -38,11 +38,33 @@ public class MaxEntTools {
         return labels;
     }
 
+    public static List<String[]> predictNBest(InstanceList instance, MEMM maxent, int k) {
+        return predictNBest(instance, maxent, k, "START");
+    }
+
+    public static List<String[]> predictNBest(InstanceList instance, MEMM maxent, int k, String startClassId) {
+        ViterbiWithKBest vit = new ViterbiWithKBest(instance, maxent);
+
+        int[][] paths = vit.getKbestPath(k);
+
+        List<String[]> kBestLabels = new ArrayList<>();
+        for (int i = 0; i < k; ++i) {
+            List<String> toAdd = new ArrayList<>();
+
+            for (int p : paths[i]) {
+                toAdd.add((String) maxent.getLabelAlphabet().lookupObject(p));
+            }
+            kBestLabels.add(toAdd.toArray(new String[toAdd.size()]));
+        }
+
+        return kBestLabels;
+    }
+
 
     @SuppressWarnings("unchecked")
-    public static MEMM trainMEMM(InstanceList trainingData) {
-
-        LabelAlphabet labelAlphabet = new LabelAlphabet();
+    protected static Map<String, InstanceList> createMaxEntDatasets(InstanceList trainingData, MEMM orig) {
+        LabelAlphabet labelAlphabet = (orig==null ? new LabelAlphabet() : orig.getLabelAlphabet());
+        labelAlphabet.startGrowth();
 
         Map<String, InstanceList> datasets = new HashMap<String, InstanceList>();
 
@@ -71,7 +93,7 @@ public class MaxEntTools {
                     prevlab = "START";
                 }
 
-                Label lab = labelAlphabet.lookupLabel(ls.get(i).toString());
+                Label lab = labelAlphabet.lookupLabel(ls.get(i).toString(),true);
                 Instance bininst = new Instance(fv, lab, null,
                         ((List<String>) inst.getSource()).get(i));
 
@@ -82,12 +104,109 @@ public class MaxEntTools {
                 datasets.get(prevlab).add(bininst);
             }
         }
-
-        MEMM memm = new MEMM();
-        for (String lab : datasets.keySet()) {
+        return datasets;
+    }
+        
+   public static MEMM trainMEMM(InstanceList trainingData) {
+	   Map<String, InstanceList> datasets = createMaxEntDatasets(trainingData,null);
+	   MEMM memm = new MEMM();
+       for (String lab : datasets.keySet()) {
             memm.setModel(lab, new MaxEntL1Trainer().train(datasets.get(lab), 200));
+       }
+       return memm;
+    }
+
+	public static MEMM trainMEMMIncremental(MEMM orig, InstanceList trainingData, int orig_numfeature) {
+		int orig_numlabel = orig.getLabelAlphabet().size();
+  		Map<String, InstanceList> datasets = createMaxEntDatasets(trainingData,orig);
+  		
+  		Set<String> labelsToTrain = new HashSet<String>(datasets.keySet());
+  		for (int i=0;i<orig.getLabelAlphabet().size();++i) {
+  			labelsToTrain.add(orig.getLabelAlphabet().lookupLabel(i).toString());
+  		}
+
+  		for(String lab : labelsToTrain){
+  			MaxEnt orig_lab = orig.getModels().get(lab);
+	    	if(orig_lab!=null && (orig_lab.getNumParameters() != orig_lab.getParameters().length)){
+	    		fixMaxentParameters(orig_lab, orig_numlabel, orig_numfeature);
+	    		orig.setModel(lab,orig_lab);
+	    	}
+	    	if(!datasets.containsKey(lab) || datasets.get(lab).size()<10)
+	    		continue;
+	    	MaxEntL1Trainer trainer =  orig_lab != null ? new MaxEntL1Trainer(orig_lab) : new MaxEntL1Trainer();
+	    	orig.setModel(lab, trainer.train(datasets.get(lab), 200));
+	    }
+	    return orig;
+	}
+
+    private static void fixMaxentParameters(MaxEnt orig, int orig_numlabel, int orig_numfeature) {
+    	double p[] = new double[orig.getNumParameters()];
+    	Arrays.fill(p, 0f);
+    	int s = orig.getAlphabet().size()+1;
+    	for(int l=0;l<orig_numlabel;++l)
+    		for(int f=0;f<orig_numfeature;++f){
+    			if(orig.getParameters().length <= l * (orig_numfeature + 1) + f)
+    				break;
+    			p[l * s + f] = orig.getParameters()[l * (orig_numfeature + 1) + f];
+    		}
+    	orig.setParameters(p);
+    	orig.setDefaultFeatureIndex(orig.getAlphabet().size());
+	}
+
+/*	public static List<NamedEntity> testFromStringTokens(InstanceList testData, String text, int[] offsets, MEMM memm) {
+        LinkedList NEList = new LinkedList();
+        new Vector();
+        NamedEntity ne = null;
+        String prevLabel = "";
+        String currLabel = "";
+        Vector testWords = (Vector) ((Instance) testData.get(0)).getSource();
+        Sequence input = (Sequence) ((Instance) testData.get(0)).getData();
+
+        //Sequence output = memm.transduce(input);
+
+
+        List<String> myWords = new LinkedList<>();
+        for (int j = 0; j < testWords.size(); ++j) {
+            myWords.add(testWords.get(j).toString());
         }
 
-        return memm;
+
+        List output = predict(InstaceListTools.doInstanceList(memm, (FeatureVectorSequence) input, myWords), memm);
+
+
+        for (int j = 0; j < output.size(); ++j) {
+            currLabel = output.get(j).toString();
+            if (!currLabel.equals("O")) {
+                if (currLabel.equals(prevLabel)) {
+                    ne.setEntity((text.substring(ne.getBegin(), offsets[j]) + ((String[]) ((String[]) testWords.get(j)))[0].toString()).trim());
+                    ne.setEnd(ne.getBegin() + ne.getEntity().length());
+                } else {
+                    if (ne != null) {
+                        NEList.add(ne);
+                        ne = null;
+                    }
+
+                    if (ne != null) {
+                        NEList.add(ne);
+                        ne = null;
+                    }
+
+                    ne = new NamedEntity();
+                    ne.setEntity(((String[]) ((String[]) testWords.get(j)))[0].toString().trim());
+                    ne.setAnnotation(output.get(j).toString());
+                    ne.setBegin(offsets[j]);
+                    ne.setEnd(offsets[j] + ne.getEntity().length());
+                }
+            }
+
+            prevLabel = currLabel;
+        }
+
+        if (ne != null) {
+            NEList.add(ne);
+        }
+
+        return NEList;
     }
+*/
 }
