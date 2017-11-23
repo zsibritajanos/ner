@@ -40,11 +40,11 @@ public class RegExpLexicon extends Feature {
 
     this.file = file;
     this.encoding = encoding;
-    if (!prefix.equalsIgnoreCase("null")) {
+    if (prefix != null) {
       this.prefix = prefix;
     }
 
-    if (!postfix.equalsIgnoreCase("null")) {
+    if (postfix != null) {
       this.postfix = postfix;
     }
 

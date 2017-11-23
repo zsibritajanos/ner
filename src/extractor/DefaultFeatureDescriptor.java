@@ -40,14 +40,15 @@ public class DefaultFeatureDescriptor extends FeatureDescriptor implements Seria
     this.getFeatures().add(new Lexicon("company", false, true, WINDOW_SIZE, ADD_FALSE, "data/lexicon/company.lexicon", Settings.DEFAULT_ENCODING, false));
     // ceg utotagok
     this.getFeatures().add(new Lexicon("company-suffix", false, true, WINDOW_SIZE, ADD_FALSE, "data/lexicon/company-suffix.lexicon", Settings.DEFAULT_ENCODING, false));
+/*  
     // orszagok angolul
     this.getFeatures().add(new Lexicon("en.country", false, true, WINDOW_SIZE, ADD_FALSE, "data/lexicon/en/en.country.lexicon", Settings.DEFAULT_ENCODING, false));
     // algerian american
-    this.getFeatures().add(new Lexicon("en.inhabitant", false, true, WINDOW_SIZE, ADD_FALSE, "data/lexicon/en/en.inhabitant.lexicon", Settings.DEFAULT_ENCODING, false));
+	this.getFeatures().add(new Lexicon("en.inhabitant", false, true, WINDOW_SIZE, ADD_FALSE, "data/lexicon/en/en.inhabitant.lexicon", Settings.DEFAULT_ENCODING, false));
     this.getFeatures().add(new Lexicon("en.non-ne", false, true, WINDOW_SIZE, ADD_FALSE, "data/lexicon/en/en.non-ne.lexicon", Settings.DEFAULT_ENCODING, false));
     this.getFeatures().add(new Lexicon("en.stopword", false, true, WINDOW_SIZE, ADD_FALSE, "data/lexicon/en/en.stopword.lexicon", Settings.DEFAULT_ENCODING, false));
     this.getFeatures().add(new Lexicon("en.wword", false, false, WINDOW_SIZE, ADD_FALSE, "data/lexicon/en/en.wword.lexicon", Settings.DEFAULT_ENCODING, false));
-    // keresztnevek
+*/    // keresztnevek
     this.getFeatures().add(new Lexicon("firstname", false, true, WINDOW_SIZE, ADD_FALSE, "data/lexicon/firstname.lexicon", Settings.DEFAULT_ENCODING, false));
     // vilagvarosok magyarul
     this.getFeatures().add(new Lexicon("hu.city", false, true, WINDOW_SIZE, ADD_FALSE, "data/lexicon/hu.city.lexicon", Settings.DEFAULT_ENCODING, true));

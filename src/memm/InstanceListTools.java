@@ -7,7 +7,7 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class InstaceListTools {
+public class InstanceListTools {
 
     /**
      * Writes the given instancelist to the specifed file, with the specified
@@ -30,6 +30,7 @@ public class InstaceListTools {
                 FeatureVectorSequence data = (FeatureVectorSequence) instance.getData();
                 LabelSequence target = (LabelSequence) instance.getTarget();
 
+                @SuppressWarnings("unchecked")
                 List<String> source = (List<String>) instance.getSource();
 
                 for (int i = 0; i < data.size(); i++) {
@@ -41,16 +42,16 @@ public class InstaceListTools {
                 writer.write("\n");
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        	System.err.println(e);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        	System.err.println(e);
         } catch (IOException e) {
-            e.printStackTrace();
+        	System.err.println(e);
         } finally {
             try {
                 writer.close();
             } catch (IOException e) {
-                e.printStackTrace();
+            	System.err.println(e);
             }
         }
     }
@@ -105,7 +106,7 @@ public class InstaceListTools {
                 writer.write('\n');
             }
         } catch (IOException e) {
-            e.printStackTrace();
+        	System.err.println(e);
         }
     }
 
@@ -119,7 +120,7 @@ public class InstaceListTools {
     public static SortedSet<Entry<Double, String>> sortFeatures(
             FeatureVector features, double[] fv) {
 
-        SortedSet<Entry<Double, String>> ret = new TreeSet<>(
+        SortedSet<Entry<Double, String>> ret = new TreeSet<Entry<Double, String>>(
                 getComparator());
 
         Alphabet featureAlphabet = features.getAlphabet();
@@ -128,7 +129,7 @@ public class InstaceListTools {
             int featureIndex = features.indexAtLocation(j);
             String objectName = featureAlphabet.lookupObject(featureIndex).toString();
             if (Math.abs(fv[featureIndex]) - 0.001 > 0.0) {
-                ret.add(new AbstractMap.SimpleEntry<>(fv[featureIndex],
+                ret.add(new AbstractMap.SimpleEntry<Double, String>(fv[featureIndex],
                         objectName));
             }
         }
