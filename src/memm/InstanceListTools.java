@@ -42,22 +42,22 @@ public class InstanceListTools {
                 writer.write("\n");
             }
         } catch (FileNotFoundException e) {
-        	System.err.println(e);
+            System.err.println(e);
         } catch (UnsupportedEncodingException e) {
-        	System.err.println(e);
+            System.err.println(e);
         } catch (IOException e) {
-        	System.err.println(e);
+            System.err.println(e);
         } finally {
             try {
                 writer.close();
             } catch (IOException e) {
-            	System.err.println(e);
+                System.err.println(e);
             }
         }
     }
 
     /**
-     * Writes the given instancelist with featureweights to the specifed file,
+     * Writes the given instancelist with featureweights to the specified file,
      * with the specified encoding.
      *
      * @param instanceList
@@ -106,7 +106,7 @@ public class InstanceListTools {
                 writer.write('\n');
             }
         } catch (IOException e) {
-        	System.err.println(e);
+            System.err.println(e);
         }
     }
 
@@ -120,7 +120,7 @@ public class InstanceListTools {
     public static SortedSet<Entry<Double, String>> sortFeatures(
             FeatureVector features, double[] fv) {
 
-        SortedSet<Entry<Double, String>> ret = new TreeSet<Entry<Double, String>>(
+        SortedSet<Entry<Double, String>> ret = new TreeSet<>(
                 getComparator());
 
         Alphabet featureAlphabet = features.getAlphabet();
@@ -129,7 +129,7 @@ public class InstanceListTools {
             int featureIndex = features.indexAtLocation(j);
             String objectName = featureAlphabet.lookupObject(featureIndex).toString();
             if (Math.abs(fv[featureIndex]) - 0.001 > 0.0) {
-                ret.add(new AbstractMap.SimpleEntry<Double, String>(fv[featureIndex],
+                ret.add(new AbstractMap.SimpleEntry<>(fv[featureIndex],
                         objectName));
             }
         }
@@ -152,9 +152,7 @@ public class InstanceListTools {
 
         int numFeatures = dict.size() + 1;
 
-        // Include the feature weights according to each label
-        double[] weights = new double[numFeatures - 1]; // do not deal with the
-        // default feature
+        double[] weights = new double[numFeatures - 1];
         Label l = labelDict.lookupLabel(label);
         int li = l.getIndex();
         for (int i = 0; i < model.getDefaultFeatureIndex(); i++) {
@@ -192,13 +190,13 @@ public class InstanceListTools {
     public static SortedSet<Entry<Double, String>> getPosterioriProbability(
             MEMM memm, String prevClassID, Instance currentInstance) {
         MaxEnt currentModel = memm.getModels().get(prevClassID);
-        SortedSet<Entry<Double, String>> classes = new TreeSet<Entry<Double, String>>(
+        SortedSet<Entry<Double, String>> classes = new TreeSet<>(
                 getComparator());
         double[] scores = new double[currentModel.getLabelAlphabet().size()];
         currentModel.getClassificationScores(currentInstance, scores);
         for (int i = 0; i < scores.length; i++) {
             String classID = (String) currentModel.getLabelAlphabet().lookupObject(i);
-            classes.add(new AbstractMap.SimpleEntry<Double, String>(scores[i],
+            classes.add(new AbstractMap.SimpleEntry<>(scores[i],
                     classID));
         }
         return classes;
@@ -227,7 +225,7 @@ public class InstanceListTools {
             featureAlphabet.stopGrowth();
         }
 
-        int index = 0;
+        int index;
         for (int i = 0; i < features.size(); ++i) {
             for (int j = 0; j < features.get(i).size(); ++j) {
                 index = featureAlphabet.lookupIndex(features.get(i).get(j), growth);

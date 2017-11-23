@@ -12,10 +12,12 @@ import java.util.*;
  */
 public class MEMMMultiTrain {
 
-
     /**
+     * @param trainFile
      * @param serializedFileName
-     * @param tempDir
+     * @param labelIndex
+     * @param trainFileEncoding
+     * @param separator
      */
     public void run(String trainFile, String serializedFileName, int labelIndex, String trainFileEncoding, String separator) {
         FeatureDescriptor new_fd = new DefaultFeatureDescriptor();
@@ -24,24 +26,27 @@ public class MEMMMultiTrain {
     }
 
     /**
-     * @param memmMultiModel
+     * @param memmModel
+     * @param trainFile
      * @param serializedFileName
-     * @param tempDir
+     * @param labelIndex
+     * @param trainFileEncoding
+     * @param separator
      */
     public void incremental(MEMMModel memmModel, String trainFile, String serializedFileName, int labelIndex, String trainFileEncoding, String separator) {
 
-        extractor.FeatureExtractor featureExtractor = memmModel.getFeatureExtractor();        
+        extractor.FeatureExtractor featureExtractor = memmModel.getFeatureExtractor();
 
         List<List<String[]>> trainSentences = IOBReader.readIOB(trainFile, trainFileEncoding, separator);
-        
+
         MEMMTrain memmTrain = new MEMMTrain(featureExtractor);
         int orig_numfeature = 0;
         MEMM orig = memmModel.getMemm();
-        if(orig != null){
-        	memmTrain.setFeatureAlphabet(orig.getAlphabet());
-    		orig_numfeature = memmTrain.getFeatureAlphabet().size();
+        if (orig != null) {
+            memmTrain.setFeatureAlphabet(orig.getAlphabet());
+            orig_numfeature = memmTrain.getFeatureAlphabet().size();
         }
-        
+
         for (List<String[]> sentence : trainSentences) {
             String[] tokens = new String[sentence.size()];
             String[] labels = new String[sentence.size()];
@@ -52,24 +57,21 @@ public class MEMMMultiTrain {
             }
 
 
-
             memmTrain.addSentence(tokens, labels);
 
         }
-        
+
         if (memmTrain.getInstanceList().size() > 5) {
-            MEMM memm = null;
+            MEMM memm;
             if (orig == null)
                 memm = MaxEntTools.trainMEMM(memmTrain.getInstanceList());
             else
-                memm = MaxEntTools.trainMEMMIncremental(orig, memmTrain.getInstanceList(),orig_numfeature);
+                memm = MaxEntTools.trainMEMMIncremental(orig, memmTrain.getInstanceList(), orig_numfeature);
             memmModel.setMemm(memm);
             memmModel.setFeatureAlphabet(memm.getAlphabet());
             memmModel.setLabelAlphabet(memm.getLabelAlphabet());
         }
         memmModel.serialize(serializedFileName);
-        
-//    	MEMMMultiSerializer.compressAndSerialize(memmMultiModel, serializedFileName);
     }
 
 }

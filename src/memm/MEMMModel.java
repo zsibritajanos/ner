@@ -3,102 +3,95 @@ package memm;
 import cc.mallet.types.Alphabet;
 import extractor.FeatureExtractor;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-//import relatedworks.LineFeatureExtractor;
-
 public class MEMMModel implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-  // trained MEMM
-  private MEMM memm = null;
-  // possible labels
-  private Alphabet labelAlphabet = null;
-  // possible features
-  private Alphabet featureAlphabet = null;
-  // feature extractor
-  private FeatureExtractor featureExtractor = null;
+    private static final long serialVersionUID = 1L;
+    // trained MEMM
+    private MEMM memm = null;
+    // possible labels
+    private Alphabet labelAlphabet = null;
+    // possible features
+    private Alphabet featureAlphabet = null;
+    // feature extractor
+    private FeatureExtractor featureExtractor = null;
 
-  public MEMMModel(MEMM memm, FeatureExtractor featureExtractor) {
-    if(memm != null) {
-    	this.setMemm(memm);
-        this.setFeatureAlphabet(memm.getAlphabet());
-        this.setLabelAlphabet(memm.getLabelAlphabet());
+    public MEMMModel(MEMM memm, FeatureExtractor featureExtractor) {
+        if (memm != null) {
+            this.setMemm(memm);
+            this.setFeatureAlphabet(memm.getAlphabet());
+            this.setLabelAlphabet(memm.getLabelAlphabet());
+        }
+        this.setFeatureExtractor(featureExtractor);
     }
-	this.setFeatureExtractor(featureExtractor);    	    	    
-  }
 
-  public void serialize(String file) {
+    public void serialize(String file) {
 
-	    try {
-	      ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(
-	              new FileOutputStream(file)));
-	      oos.writeObject(this);
-	      oos.close();
-	    } catch (IOException e) {
-	      e.printStackTrace();
-	    }
-	  }
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(
+                    new FileOutputStream(file)));
+            oos.writeObject(this);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	  /**
-	   * Restore model from an input file.
-	   */
-	  public static MEMMModel restore(String file) {
-	    ObjectInputStream objectInputStream = null;
-	    MEMMModel model = null;
+    /**
+     * Restore model from an input file.
+     */
+    public static MEMMModel restore(String file) {
+        ObjectInputStream objectInputStream = null;
+        MEMMModel model = null;
 
-	    try {
-	      objectInputStream = new ObjectInputStream(new GZIPInputStream(new FileInputStream(file)));
-	      model = (MEMMModel) objectInputStream.readObject();
-	    } catch (IOException | ClassNotFoundException e) {
-	      e.printStackTrace();
-	    } finally {
-	      try {
-	        objectInputStream.close();
-	      } catch (IOException e) {
-	        e.printStackTrace();
-	      }
-	    }
+        try {
+            objectInputStream = new ObjectInputStream(new GZIPInputStream(new FileInputStream(file)));
+            model = (MEMMModel) objectInputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                objectInputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-	    return model;
-	  }
-  
-  public MEMM getMemm() {
-    return memm;
-  }
+        return model;
+    }
 
-  public void setMemm(MEMM memm) {
-    this.memm = memm;
-  }
+    public MEMM getMemm() {
+        return memm;
+    }
 
-  public FeatureExtractor getFeatureExtractor() {
-    return featureExtractor;
-  }
+    public void setMemm(MEMM memm) {
+        this.memm = memm;
+    }
 
-  public void setFeatureExtractor(FeatureExtractor featureExtractor) {
-    this.featureExtractor = featureExtractor;
-  }
+    public FeatureExtractor getFeatureExtractor() {
+        return featureExtractor;
+    }
 
-  public Alphabet getLabelAlphabet() {
-    return labelAlphabet;
-  }
+    public void setFeatureExtractor(FeatureExtractor featureExtractor) {
+        this.featureExtractor = featureExtractor;
+    }
 
-  public void setLabelAlphabet(Alphabet labelAlphabet) {
-    this.labelAlphabet = labelAlphabet;
-  }
+    public Alphabet getLabelAlphabet() {
+        return labelAlphabet;
+    }
 
-  public Alphabet getFeatureAlphabet() {
-    return featureAlphabet;
-  }
+    public void setLabelAlphabet(Alphabet labelAlphabet) {
+        this.labelAlphabet = labelAlphabet;
+    }
 
-  public void setFeatureAlphabet(Alphabet featureAlphabet) {
-    this.featureAlphabet = featureAlphabet;
-  }
+    public Alphabet getFeatureAlphabet() {
+        return featureAlphabet;
+    }
+
+    public void setFeatureAlphabet(Alphabet featureAlphabet) {
+        this.featureAlphabet = featureAlphabet;
+    }
 }

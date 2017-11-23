@@ -13,28 +13,27 @@ import java.util.Map;
  */
 @SuppressWarnings("serial")
 public class MEMM implements Serializable {
-  private final Map<String, MaxEnt> models = new HashMap<String, MaxEnt>();
+    private final Map<String, MaxEnt> models = new HashMap<String, MaxEnt>();
 
-  public Map<String, MaxEnt> getModels() {
-    return models;
-  }
-
-  public void setModel(String c, MaxEnt model) {
-    this.models.put(c, model);
-  }
-
-  public LabelAlphabet getLabelAlphabet() {
-    for (MaxEnt m : models.values()) {
-      return m.getLabelAlphabet();
+    public Map<String, MaxEnt> getModels() {
+        return models;
     }
-    return null;
-  }
 
-  public Alphabet getAlphabet() {
-    for (MaxEnt m : models.values()) {
-      return m.getAlphabet();
+    public void setModel(String c, MaxEnt model) {
+        this.models.put(c, model);
     }
-    return null;
-  }
 
+    public LabelAlphabet getLabelAlphabet() {
+        for (MaxEnt m : models.values()) {
+            return m.getLabelAlphabet();
+        }
+        return null;
+    }
+
+    public Alphabet getAlphabet() {
+        for (MaxEnt m : models.values()) {
+            return m.getAlphabet();
+        }
+        return null;
+    }
 }

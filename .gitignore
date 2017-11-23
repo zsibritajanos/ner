@@ -1,0 +1,13 @@
+*
+!*/
+
+!lib/*
+
+!data/lexicon/*
+!data/mapword/*
+!data/regexplexicon/*
+!data/suffix/*
+
+!build.xml
+!.gitignore
+!README.md

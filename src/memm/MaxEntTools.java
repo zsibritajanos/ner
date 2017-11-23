@@ -3,10 +3,8 @@ package memm;
 import cc.mallet.classify.MaxEnt;
 import cc.mallet.classify.MaxEntL1Trainer;
 import cc.mallet.types.*;
-//import crf.NamedEntity;
 
 import java.util.*;
-import java.util.Vector;
 
 public class MaxEntTools {
 
@@ -30,7 +28,7 @@ public class MaxEntTools {
 
         List<String> labels;
 
-        labels = new LinkedList<String>();
+        labels = new LinkedList<>();
         for (int p : path) {
             labels.add((String) maxent.getLabelAlphabet().lookupObject(p));
         }
@@ -63,7 +61,7 @@ public class MaxEntTools {
 
     @SuppressWarnings("unchecked")
     protected static Map<String, InstanceList> createMaxEntDatasets(InstanceList trainingData, MEMM orig) {
-        LabelAlphabet labelAlphabet = (orig==null ? new LabelAlphabet() : orig.getLabelAlphabet());
+        LabelAlphabet labelAlphabet = (orig == null ? new LabelAlphabet() : orig.getLabelAlphabet());
         labelAlphabet.startGrowth();
 
         Map<String, InstanceList> datasets = new HashMap<String, InstanceList>();
@@ -93,7 +91,7 @@ public class MaxEntTools {
                     prevlab = "START";
                 }
 
-                Label lab = labelAlphabet.lookupLabel(ls.get(i).toString(),true);
+                Label lab = labelAlphabet.lookupLabel(ls.get(i).toString(), true);
                 Instance bininst = new Instance(fv, lab, null,
                         ((List<String>) inst.getSource()).get(i));
 
@@ -106,52 +104,52 @@ public class MaxEntTools {
         }
         return datasets;
     }
-        
-   public static MEMM trainMEMM(InstanceList trainingData) {
-	   Map<String, InstanceList> datasets = createMaxEntDatasets(trainingData,null);
-	   MEMM memm = new MEMM();
-       for (String lab : datasets.keySet()) {
+
+    public static MEMM trainMEMM(InstanceList trainingData) {
+        Map<String, InstanceList> datasets = createMaxEntDatasets(trainingData, null);
+        MEMM memm = new MEMM();
+        for (String lab : datasets.keySet()) {
             memm.setModel(lab, new MaxEntL1Trainer().train(datasets.get(lab), 200));
-       }
-       return memm;
+        }
+        return memm;
     }
 
-	public static MEMM trainMEMMIncremental(MEMM orig, InstanceList trainingData, int orig_numfeature) {
-		int orig_numlabel = orig.getLabelAlphabet().size();
-  		Map<String, InstanceList> datasets = createMaxEntDatasets(trainingData,orig);
-  		
-  		Set<String> labelsToTrain = new HashSet<String>(datasets.keySet());
-  		for (int i=0;i<orig.getLabelAlphabet().size();++i) {
-  			labelsToTrain.add(orig.getLabelAlphabet().lookupLabel(i).toString());
-  		}
+    public static MEMM trainMEMMIncremental(MEMM orig, InstanceList trainingData, int orig_numfeature) {
+        int orig_numlabel = orig.getLabelAlphabet().size();
+        Map<String, InstanceList> datasets = createMaxEntDatasets(trainingData, orig);
 
-  		for(String lab : labelsToTrain){
-  			MaxEnt orig_lab = orig.getModels().get(lab);
-	    	if(orig_lab!=null && (orig_lab.getNumParameters() != orig_lab.getParameters().length)){
-	    		fixMaxentParameters(orig_lab, orig_numlabel, orig_numfeature);
-	    		orig.setModel(lab,orig_lab);
-	    	}
-	    	if(!datasets.containsKey(lab) || datasets.get(lab).size()<10)
-	    		continue;
-	    	MaxEntL1Trainer trainer =  orig_lab != null ? new MaxEntL1Trainer(orig_lab) : new MaxEntL1Trainer();
-	    	orig.setModel(lab, trainer.train(datasets.get(lab), 200));
-	    }
-	    return orig;
-	}
+        Set<String> labelsToTrain = new HashSet<String>(datasets.keySet());
+        for (int i = 0; i < orig.getLabelAlphabet().size(); ++i) {
+            labelsToTrain.add(orig.getLabelAlphabet().lookupLabel(i).toString());
+        }
+
+        for (String lab : labelsToTrain) {
+            MaxEnt orig_lab = orig.getModels().get(lab);
+            if (orig_lab != null && (orig_lab.getNumParameters() != orig_lab.getParameters().length)) {
+                fixMaxentParameters(orig_lab, orig_numlabel, orig_numfeature);
+                orig.setModel(lab, orig_lab);
+            }
+            if (!datasets.containsKey(lab) || datasets.get(lab).size() < 10)
+                continue;
+            MaxEntL1Trainer trainer = orig_lab != null ? new MaxEntL1Trainer(orig_lab) : new MaxEntL1Trainer();
+            orig.setModel(lab, trainer.train(datasets.get(lab), 200));
+        }
+        return orig;
+    }
 
     private static void fixMaxentParameters(MaxEnt orig, int orig_numlabel, int orig_numfeature) {
-    	double p[] = new double[orig.getNumParameters()];
-    	Arrays.fill(p, 0f);
-    	int s = orig.getAlphabet().size()+1;
-    	for(int l=0;l<orig_numlabel;++l)
-    		for(int f=0;f<orig_numfeature;++f){
-    			if(orig.getParameters().length <= l * (orig_numfeature + 1) + f)
-    				break;
-    			p[l * s + f] = orig.getParameters()[l * (orig_numfeature + 1) + f];
-    		}
-    	orig.setParameters(p);
-    	orig.setDefaultFeatureIndex(orig.getAlphabet().size());
-	}
+        double p[] = new double[orig.getNumParameters()];
+        Arrays.fill(p, 0f);
+        int s = orig.getAlphabet().size() + 1;
+        for (int l = 0; l < orig_numlabel; ++l)
+            for (int f = 0; f < orig_numfeature; ++f) {
+                if (orig.getParameters().length <= l * (orig_numfeature + 1) + f)
+                    break;
+                p[l * s + f] = orig.getParameters()[l * (orig_numfeature + 1) + f];
+            }
+        orig.setParameters(p);
+        orig.setDefaultFeatureIndex(orig.getAlphabet().size());
+    }
 
 /*	public static List<NamedEntity> testFromStringTokens(InstanceList testData, String text, int[] offsets, MEMM memm) {
         LinkedList NEList = new LinkedList();
